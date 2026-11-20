@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Beauty Profile | GLOW & GLAM{% endblock %}
+
+{% block content %}
+<div class="shop-page-wrapper">
+  <div class="container">
+    
+    <div class="breadcrumbs">
+      <a href="{% url 'home' %}">Home</a>
+      <span>/</span>
+      <span class="current">My Account</span>
+    </div>
+
+    <!-- Profile Header Banner -->
+    <div style="background:linear-gradient(135deg, #FBF4F2 0%, #F5EAE6 100%); border-radius:var(--radius-md); border:1px solid var(--color-border); padding:2.5rem; margin-bottom:3rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1.5rem;">
+      <div style="display:flex; align-items:center; gap:1.5rem;">
+        <div style="width:72px; height:72px; border-radius:var(--radius-full); background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%); color:#FFFFFF; font-size:2rem; font-family:var(--font-serif); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md);">
+          {{ user.first_name|first|default:user.username|first|upper }}
+        </div>
+        <div>
+          <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; color:var(--color-primary-dark);">VIP Haute Tier</span>
+          <h1 style="font-size:2rem; margin:0.2rem 0;">{{ user.get_full_name|default:user.username }}</h1>
+          <div style="color:var(--color-text-muted); font-size:0.9rem;">
+            {{ user.email }} &bull; Member since {{ user.date_joined|date:"M Y" }}
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm" style="color:#E63946; border-color:#E63946;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div style="display:flex; gap:2rem; border-bottom:1.5px solid var(--color-border); margin-bottom:2.5rem;">
+      <a href="?tab=profile" class="tab-nav-btn {% if active_tab != 'orders' %}active{% endif %}">
+        <i class="fa-regular fa-id-card"></i> Personal Details &amp; Address
+      </a>
+      <a href="?tab=orders" class="tab-nav-btn {% if active_tab == 'orders' %}active{% endif %}">
+        <i class="fa-solid fa-box"></i> Order History ({{ orders.count }})
+      </a>
+      <a href="{% url 'wishlist' %}" class="tab-nav-btn">
+        <i class="fa-regular fa-heart"></i> My Wishlist
+      </a>
+    </div>
+
+    {% if active_tab == 'orders' %}
+      <!-- Tab: Order History -->
+      <div>
+        <h2 style="font-size:1.8rem; margin-bottom:1.5rem;">Your Order History</h2>
+
+        {% if orders %}
+          <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            {% for ord in orders %}
+              <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:1.75rem; box-shadow:var(--shadow-sm);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--color-border); padding-bottom:1rem; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+                  <div>
+                    <span style="font-size:0.8rem; color:var(--color-text-muted);">ORDER #</span>
+                    <strong style="color:var(--color-primary-dark); font-size:1.05rem; margin-left:0.35rem;">{{ ord.order_number }}</strong>
+                    <span style="color:var(--color-border); margin:0 0.5rem;">|</span>
+                    <span style="color:var(--color-text-muted); font-size:0.85rem;">{{ ord.created_at|date:"M d, Y" }}</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:1rem;">
+                    <span class="badge {% if ord.status == 'Delivered' %}badge-new{% elif ord.status == 'Shipped' %}badge-luxury{% else %}badge-bestseller{% endif %}">
+                      {{ ord.status }}
+                    </span>
+                    <strong style="font-size:1.15rem;">${{ ord.total_price }}</strong>
+                  </div>
+                </div>
+
+                <!-- Items Row -->
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:center; margin-bottom:1.25rem;">
+                  {% for item in ord.items.all %}
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                      <img src="{{ item.product_image }}" alt="{{ item.product_title }}" style="width:48px; height:48px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--color-border);">
+                      <div style="font-size:0.85rem;">
+                        <div style="font-weight:600;">{{ item.product_title }}</div>
+                        <div style="color:var(--color-text-muted);">Qty: {{ item.quantity }}{% if item.shade_name %} &bull; {{ item.shade_name }}{% endif %}</div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--color-border); padding-top:1rem; font-size:0.85rem;">
+                  <span style="color:var(--color-text-muted);">
+                    Shipped to: <strong>{{ ord.city }}, {{ ord.state }}</strong> via {{ ord.shipping_method }}
+                  </span>
+                  <a href="{% url 'order_detail' order_number=ord.order_number %}" class="btn btn-secondary btn-sm">
+                    View Full Order Receipt &rarr;
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align:center; padding:4rem 2rem; background:#FFFFFF; border-radius:var(--radius-md); border:1px solid var(--color-border);">
+            <i class="fa-solid fa-box-open" style="font-size:3rem; color:var(--color-primary-light); margin-bottom:1rem;"></i>
+            <h3>No Orders Placed Yet</h3>
+            <p style="color:var(--color-text-muted); margin-bottom:1.5rem;">Explore our curated selection and experience your first luxury order.</p>
+            <a href="{% url 'shop' %}" class="btn btn-primary">Start Shopping</a>
+          </div>
+        {% endif %}
+      </div>
+
+    {% else %}
+      <!-- Tab: Personal Profile Edit -->
+      <div style="max-width:800px; background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:2.5rem; box-shadow:var(--shadow-sm);">
+        <h2 style="font-size:1.8rem; margin-bottom:0.5rem;">Edit Beauty Profile</h2>
+        <p style="color:var(--color-text-muted); margin-bottom:2rem;">Keep your shipping address and beauty preferences updated for customized consultations.</p>
+
+        <form method="POST">
+          {% csrf_token %}
+          
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">First Name *</label>
+              {{ form.first_name }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name *</label>
+              {{ form.last_name }}
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Email Address (Account ID)</label>
+              {{ form.email }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              {{ form.phone }}
+            </div>
+          </div>
+
+          <h3 style="font-size:1.2rem; margin:1.5rem 0 1rem; border-top:1px solid var(--color-border); padding-top:1.5rem;">Default Shipping Address</h3>
+
+          <div class="form-group">
+            <label class="form-label">Street Address</label>
+            {{ form.address }}
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              {{ form.city }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">State / Province</label>
+              {{ form.state }}
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Postal / ZIP Code</label>
+              {{ form.postal_code }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              {{ form.country }}
+            </div>
+          </div>
+
+          <h3 style="font-size:1.2rem; margin:1.5rem 0 1rem; border-top:1px solid var(--color-border); padding-top:1.5rem;">Beauty Profile &amp; Preferences</h3>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Skin Type</label>
+              {{ form.skin_type }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Favorite Makeup Category</label>
+              {{ form.favorite_category }}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="margin-top:1.5rem;">
+            Save Beauty Profile
+          </button>
+        </form>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

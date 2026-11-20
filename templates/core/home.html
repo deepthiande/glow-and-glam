@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}GLOW & GLAM | Beauty Begins With You | Luxury Cosmetics{% endblock %}
+
+{% block content %}
+<!-- 1. Hero Banner Section -->
+<section class="hero-banner-section">
+  <div class="container">
+    <div class="hero-grid">
+      
+      <!-- Left Content -->
+      <div class="hero-text-content">
+        <div class="hero-tag">
+          <i class="fa-solid fa-sparkles"></i> The New Autumn Radiance Collection
+        </div>
+        <h1 class="heading-display hero-title">
+          Beauty Begins <br><em>With You</em>
+        </h1>
+        <p class="hero-subtitle">
+          Discover your beauty. Express your style. Experience artisanal skincare, velvet lip pigments, and luminous complexion enhancers formulated to illuminate your unique grace.
+        </p>
+        <div class="hero-buttons">
+          <a href="{% url 'shop' %}" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-bag-shopping"></i> Shop Now
+          </a>
+          <a href="{% url 'shop' %}?sort=bestseller" class="btn btn-secondary btn-lg">
+            <i class="fa-solid fa-crown"></i> Explore Best Sellers
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Image Card with floating badges -->
+      <div class="hero-image-wrapper">
+        <div class="hero-main-card">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=800&auto=format&fit=crop" alt="GLOW & GLAM Luxury Beauty Collection">
+        </div>
+        
+        <!-- Floating Pill Badge 1 -->
+        <div class="floating-hero-pill">
+          <div class="star-icon">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div>
+            <h5>4.9 / 5.0 Star Rating</h5>
+            <p>Loved by 50,000+ Beauty Connoisseurs</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 2. Trust Badges Section -->
+<section class="trust-badges-section">
+  <div class="container">
+    <div class="trust-grid">
+      <div class="trust-item">
+        <div class="trust-icon-box">
+          <i class="fa-solid fa-feather"></i>
+        </div>
+        <div>
+          <h4>100% Cruelty-Free</h4>
+          <p>Leaping Bunny certified, zero animal testing</p>
+        </div>
+      </div>
+
+      <div class="trust-item">
+        <div class="trust-icon-box">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div>
+          <h4>Clean &amp; Vegan Formulations</h4>
+          <p>Paraben, sulphate, and phthalate free</p>
+        </div>
+      </div>
+
+      <div class="trust-item">
+        <div class="trust-icon-box">
+          <i class="fa-solid fa-truck-fast"></i>
+        </div>
+        <div>
+          <h4>Complimentary Shipping</h4>
+          <p>Free luxury tracked delivery on orders $50+</p>
+        </div>
+      </div>
+
+      <div class="trust-item">
+        <div class="trust-icon-box">
+          <i class="fa-solid fa-shield-heart"></i>
+        </div>
+        <div>
+          <h4>Dermatologist Tested</h4>
+          <p>Hypoallergenic &amp; safe for sensitive skin</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Product Categories Section (10 Categories) -->
+<section class="section-padding" style="background-color: #FFFFFF;">
+  <div class="container">
+    <h2 class="heading-section">Curated Beauty Categories</h2>
+    <p class="section-subtitle">
+      Explore our precision cosmetic categories crafted with French botanical essences and high-purity pigments.
+    </p>
+
+    <div class="categories-grid">
+      {% for category in categories %}
+      <a href="{% url 'shop' %}?category={{ category.slug }}" class="category-card">
+        <div class="category-img-box">
+          <img src="{{ category.image_url }}" alt="{{ category.name }}">
+          <div class="category-overlay"></div>
+        </div>
+        <div class="category-info">
+          <h3 class="category-title">{{ category.name }}</h3>
+          <span class="category-count">{{ category.products.count }} Products</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 4. Featured Products Section -->
+<section class="section-padding" style="background-color: var(--color-bg-light); border-top: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-primary);">Curator's Edit</span>
+        <h2 class="heading-section" style="text-align: left; margin-bottom: 0;">Featured Beauty Icons</h2>
+      </div>
+      <a href="{% url 'shop' %}" class="btn btn-secondary btn-sm">
+        View All Products &rarr;
+      </a>
+    </div>
+
+    <div class="products-grid">
+      {% for product in featured_products %}
+        {% include 'products/includes/product_card.html' with product=product %}
+      {% empty %}
+        <p style="grid-column: 1 / -1; text-align: center; color: var(--color-text-muted);">No products found.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 5. Promotional Special Offer Banner -->
+<section class="promo-banner-section">
+  <div class="container">
+    <div class="promo-grid">
+      <div>
+        <span class="promo-tag">
+          <i class="fa-solid fa-gem"></i> Limited Time Beauty Privileges
+        </span>
+        <h2 class="promo-title">
+          Summer Radiance &amp; Velvet Elegance
+        </h2>
+        <p class="promo-desc">
+          Awaken your complexion with high-impact pigments and hydrating rose extracts. Enjoy 20% off your entire first purchase today.
+        </p>
+
+        <!-- Coupon Copy Box -->
+        <div class="coupon-copy-box">
+          <span>Use Promo Code:</span>
+          <span class="code">GLAM20</span>
+          <button type="button" class="btn btn-white btn-sm" onclick="navigator.clipboard.writeText('GLAM20'); showToast('✨ Coupon code GLAM20 copied to clipboard! Apply it in your bag.', 'success');">
+            <i class="fa-regular fa-copy"></i> Copy Code
+          </button>
+        </div>
+
+        <div>
+          <a href="{% url 'shop' %}" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-sparkles"></i> Claim Your 20% Discount
+          </a>
+        </div>
+      </div>
+
+      <div class="promo-image-box">
+        <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800&auto=format&fit=crop" alt="Special Offer Luxury Cosmetics">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Best Sellers Section -->
+<section class="section-padding" style="background-color: #FFFFFF;">
+  <div class="container">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-primary);">Customer Favorites</span>
+        <h2 class="heading-section" style="text-align: left; margin-bottom: 0;">Best Selling Formulations</h2>
+      </div>
+      <a href="{% url 'shop' %}?sort=bestseller" class="btn btn-secondary btn-sm">
+        See All Best Sellers &rarr;
+      </a>
+    </div>
+
+    <div class="products-grid">
+      {% for product in bestsellers %}
+        {% include 'products/includes/product_card.html' with product=product %}
+      {% empty %}
+        <p style="grid-column: 1 / -1; text-align: center; color: var(--color-text-muted);">No products found.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 7. New Arrivals Section -->
+<section class="section-padding" style="background-color: var(--color-bg-warm); border-top: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-primary);">Just Landed</span>
+        <h2 class="heading-section" style="text-align: left; margin-bottom: 0;">New Arrivals</h2>
+      </div>
+      <a href="{% url 'shop' %}?sort=new" class="btn btn-secondary btn-sm">
+        Explore New Arrivals &rarr;
+      </a>
+    </div>
+
+    <div class="products-grid">
+      {% for product in new_arrivals %}
+        {% include 'products/includes/product_card.html' with product=product %}
+      {% empty %}
+        <p style="grid-column: 1 / -1; text-align: center; color: var(--color-text-muted);">No products found.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 8. Customer Testimonials Section -->
+<section class="testimonials-section">
+  <div class="container">
+    <h2 class="heading-section">Loved by Beauty Enthusiasts</h2>
+    <p class="section-subtitle">
+      Real testimonials from our global community of makeup artists and skincare lovers.
+    </p>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+        </div>
+        <p class="testimonial-text">
+          "The Velvet Matte Luxe Lipstick in Rose Whisper is without doubt the best lipstick I have ever owned. It stays comfortable all evening without drying out my lips!"
+        </p>
+        <div class="testimonial-author-row">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" alt="Charlotte M." class="testimonial-avatar">
+          <div>
+            <div class="testimonial-author-name">Charlotte Montgomery</div>
+            <div class="testimonial-verified"><i class="fa-solid fa-check-circle"></i> Verified Buyer &bull; New York</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+        </div>
+        <p class="testimonial-text">
+          "The Luminous Silk Foundation melted into my skin seamlessly. It covers redness while looking like bare, radiant skin in natural daylight. Truly luxury in every drop."
+        </p>
+        <div class="testimonial-author-row">
+          <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop" alt="Genevieve D." class="testimonial-avatar">
+          <div>
+            <div class="testimonial-author-name">Genevieve Dubois</div>
+            <div class="testimonial-verified"><i class="fa-solid fa-check-circle"></i> Verified Buyer &bull; Paris</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+        </div>
+        <p class="testimonial-text">
+          "The Rose Gold Brush Set is sheer perfection! The synthetic bristles are softer than real cashmere and blend contour effortlessly. Plus, the packaging is gorgeous."
+        </p>
+        <div class="testimonial-author-row">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" alt="Elena S." class="testimonial-avatar">
+          <div>
+            <div class="testimonial-author-name">Elena Rostova</div>
+            <div class="testimonial-verified"><i class="fa-solid fa-check-circle"></i> Verified Buyer &bull; London</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. Newsletter Subscription Section -->
+<section class="newsletter-section">
+  <div class="container">
+    <div class="newsletter-box">
+      <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-primary-dark);">Stay Illuminated</span>
+      <h2>Join The GLOW &amp; GLAM Circle</h2>
+      <p>
+        Be the first to access limited-edition releases, backstage beauty tutorials, and receive 20% off your next order.
+      </p>
+
+      <form action="{% url 'newsletter_subscribe' %}" method="POST" class="newsletter-form-row">
+        {% csrf_token %}
+        <input type="email" name="email" required placeholder="Enter your email address..." class="newsletter-input">
+        <button type="submit" class="btn btn-primary">
+          Subscribe
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if selected_category %}{{ selected_category.name }} | {% elif query %}Search: "{{ query }}" | {% endif %}Shop Luxury Cosmetics | GLOW & GLAM
+{% endblock %}
+
+{% block content %}
+<div class="shop-page-wrapper">
+  <div class="container">
+    
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <a href="{% url 'home' %}">Home</a>
+      <span>/</span>
+      <a href="{% url 'shop' %}">Shop</a>
+      {% if selected_category %}
+        <span>/</span>
+        <span class="current">{{ selected_category.name }}</span>
+      {% elif query %}
+        <span>/</span>
+        <span class="current">Search: "{{ query }}"</span>
+      {% endif %}
+    </div>
+
+    <!-- Shop Layout (Sidebar Filters + Grid) -->
+    <div class="shop-layout">
+      
+      <!-- Filter Sidebar -->
+      <aside class="filter-sidebar">
+        <div class="filter-sidebar-header">
+          <h3>Filter By</h3>
+          <a href="{% url 'shop' %}" class="clear-filters-link">Reset All</a>
+        </div>
+
+        <form action="{% url 'shop' %}" method="GET" id="filterForm">
+          {% if query %}
+            <input type="hidden" name="q" value="{{ query }}">
+          {% endif %}
+          <input type="hidden" name="sort" value="{{ sort }}">
+
+          <!-- Category Filter -->
+          <div class="filter-group">
+            <h4 class="filter-group-title">Categories</h4>
+            <div class="filter-list">
+              <label class="filter-item-label">
+                <div class="filter-checkbox-wrap">
+                  <input type="radio" name="category" value="" {% if not category_slug %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                  <span>All Categories</span>
+                </div>
+              </label>
+              {% for cat in categories %}
+                <label class="filter-item-label">
+                  <div class="filter-checkbox-wrap">
+                    <input type="radio" name="category" value="{{ cat.slug }}" {% if category_slug == cat.slug %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                    <span>{{ cat.name }}</span>
+                  </div>
+                  <span class="filter-count-badge">{{ cat.products.count }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Brand Filter -->
+          <div class="filter-group">
+            <h4 class="filter-group-title">Brands</h4>
+            <div class="filter-list">
+              <label class="filter-item-label">
+                <div class="filter-checkbox-wrap">
+                  <input type="radio" name="brand" value="" {% if not brand_slug %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                  <span>All Brands</span>
+                </div>
+              </label>
+              {% for b in brands %}
+                <label class="filter-item-label">
+                  <div class="filter-checkbox-wrap">
+                    <input type="radio" name="brand" value="{{ b.slug }}" {% if brand_slug == b.slug %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                    <span>{{ b.name }}</span>
+                  </div>
+                  <span class="filter-count-badge">{{ b.products.count }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Price Range Filter -->
+          <div class="filter-group">
+            <h4 class="filter-group-title">Price Range</h4>
+            <div class="price-inputs-row">
+              <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min $" class="price-input-field" min="0">
+              <span>-</span>
+              <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max $" class="price-input-field" min="0">
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm btn-full" style="margin-top: 0.75rem;">
+              Apply Price
+            </button>
+          </div>
+
+          <!-- Rating Filter -->
+          <div class="filter-group">
+            <h4 class="filter-group-title">Customer Rating</h4>
+            <div class="filter-list">
+              <label class="filter-item-label">
+                <div class="filter-checkbox-wrap">
+                  <input type="radio" name="rating" value="4.8" {% if rating_filter == '4.8' %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                  <span style="color:var(--color-gold);"><i class="fa-solid fa-star"></i> 4.8 &amp; Above</span>
+                </div>
+              </label>
+              <label class="filter-item-label">
+                <div class="filter-checkbox-wrap">
+                  <input type="radio" name="rating" value="4.5" {% if rating_filter == '4.5' %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                  <span style="color:var(--color-gold);"><i class="fa-solid fa-star"></i> 4.5 &amp; Above</span>
+                </div>
+              </label>
+              <label class="filter-item-label">
+                <div class="filter-checkbox-wrap">
+                  <input type="radio" name="rating" value="4.0" {% if rating_filter == '4.0' %}checked{% endif %} onchange="this.form.submit();" class="filter-checkbox">
+                  <span style="color:var(--color-gold);"><i class="fa-solid fa-star"></i> 4.0 &amp; Above</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+        </form>
+      </aside>
+
+      <!-- Products Grid & Sort Controls -->
+      <section class="shop-products-main">
+        
+        <!-- Header Controls -->
+        <div class="shop-content-header">
+          <div class="shop-results-count">
+            Showing <strong>{{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }}</strong> of <strong>{{ total_count }}</strong> luxury cosmetics
+            {% if selected_category %} in <em>{{ selected_category.name }}</em>{% endif %}
+            {% if query %} matching "<em>{{ query }}</em>"{% endif %}
+          </div>
+
+          <!-- Sorting Controls -->
+          <div class="shop-sort-controls">
+            <label for="sortSelect" style="font-size:0.88rem; color:var(--color-text-muted);">Sort by:</label>
+            <select id="sortSelect" class="sort-select" onchange="applySort(this.value);">
+              <option value="featured" {% if sort == 'featured' %}selected{% endif %}>Featured</option>
+              <option value="bestseller" {% if sort == 'bestseller' %}selected{% endif %}>Best Sellers</option>
+              <option value="popularity" {% if sort == 'popularity' %}selected{% endif %}>Popularity</option>
+              <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Customer Rating</option>
+              <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+              <option value="new" {% if sort == 'new' %}selected{% endif %}>New Arrivals</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid-3">
+          {% for product in products %}
+            {% include 'products/includes/product_card.html' with product=product %}
+          {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 5rem 2rem; background: #FFF; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+              <i class="fa-solid fa-gem" style="font-size: 3rem; color: var(--color-primary-light); margin-bottom: 1rem;"></i>
+              <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No products match your criteria</h3>
+              <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Try adjusting or clearing your filters to explore our full makeup collection.</p>
+              <a href="{% url 'shop' %}" class="btn btn-primary">
+                View All Products
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+          <div class="pagination-wrap">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if brand_slug %}&brand={{ brand_slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn">
+                <i class="fa-solid fa-chevron-left"></i>
+              </a>
+            {% endif %}
+
+            {% for p_num in page_obj.paginator.page_range %}
+              {% if page_obj.number == p_num %}
+                <span class="page-btn active">{{ p_num }}</span>
+              {% elif p_num > page_obj.number|add:"-3" and p_num < page_obj.number|add:"3" %}
+                <a href="?page={{ p_num }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if brand_slug %}&brand={{ brand_slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn">{{ p_num }}</a>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if brand_slug %}&brand={{ brand_slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn">
+                <i class="fa-solid fa-chevron-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      </section>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function applySort(val) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', val);
+    url.searchParams.set('page', 1);
+    window.location.href = url.toString();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.title }} | GLOW & GLAM Luxury Cosmetics{% endblock %}
+
+{% block content %}
+<div class="product-detail-section">
+  <div class="container">
+    
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <a href="{% url 'home' %}">Home</a>
+      <span>/</span>
+      <a href="{% url 'shop' %}">Shop</a>
+      <span>/</span>
+      <a href="{% url 'shop' %}?category={{ product.category.slug }}">{{ product.category.name }}</a>
+      <span>/</span>
+      <span class="current">{{ product.title }}</span>
+    </div>
+
+    <!-- Product Main Grid (Gallery & Purchase Info) -->
+    <div class="product-detail-grid">
+      
+      <!-- Left: Interactive Gallery -->
+      <div class="gallery-wrapper">
+        <div class="gallery-main-image-box">
+          <img id="mainDetailImage" src="{{ product.main_image }}" alt="{{ product.title }}">
+        </div>
+
+        <div class="gallery-thumbnails-row">
+          <button type="button" class="gallery-thumb-btn detail-gallery-thumb active" data-large-src="{{ product.main_image }}">
+            <img src="{{ product.main_image }}" alt="Front View">
+          </button>
+          {% if product.hover_image and product.hover_image != product.main_image %}
+            <button type="button" class="gallery-thumb-btn detail-gallery-thumb" data-large-src="{{ product.hover_image }}">
+              <img src="{{ product.hover_image }}" alt="Detail View">
+            </button>
+          {% endif %}
+          {% for img in additional_images %}
+            {% if img.image_url != product.main_image and img.image_url != product.hover_image %}
+              <button type="button" class="gallery-thumb-btn detail-gallery-thumb" data-large-src="{{ img.image_url }}">
+                <img src="{{ img.image_url }}" alt="{{ img.alt_text }}">
+              </button>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Right: Product Information & Purchase Controls -->
+      <div class="product-info-wrap">
+        <div class="product-detail-brand">{{ product.brand.name|default:"GLOW & GLAM" }}</div>
+        <h1 class="product-detail-title">{{ product.title }}</h1>
+
+        <!-- Star Rating and Review jump link -->
+        <div class="product-detail-rating-row">
+          <div class="rating-stars" style="margin-bottom:0;">
+            {% for i in "12345" %}
+              {% if forloop.counter <= product.star_full_count %}
+                <i class="fa-solid fa-star"></i>
+              {% else %}
+                <i class="fa-regular fa-star"></i>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <span style="font-weight:600; font-size:0.95rem;">{{ product.rating }}</span>
+          <span style="color:var(--color-border);">&bull;</span>
+          <a href="#reviewsTab" onclick="document.querySelector('[data-tab-target=\'tabReviews\']').click();" style="color:var(--color-primary); font-size:0.92rem; text-decoration:underline;">
+            {{ product.review_count }} verified reviews
+          </a>
+          <span style="color:var(--color-border);">&bull;</span>
+          <span style="font-size:0.85rem; color:#0F5132; background:#D1E7DD; padding:0.15rem 0.6rem; border-radius:var(--radius-full); font-weight:600;">
+            <i class="fa-solid fa-check"></i> In Stock ({{ product.stock }})
+          </span>
+        </div>
+
+        <!-- Price -->
+        <div class="product-detail-price-box">
+          <span class="detail-current-price">${{ product.price }}</span>
+          {% if product.original_price %}
+            <span class="detail-original-price">${{ product.original_price }}</span>
+          {% endif %}
+          {% if product.discount_percent > 0 %}
+            <span class="badge badge-discount">-{{ product.discount_percent }}% OFF</span>
+          {% endif %}
+        </div>
+
+        <!-- Short Description -->
+        <p class="product-detail-short-desc">
+          {{ product.short_description }}
+        </p>
+
+        <!-- Form for Add to Cart / Buy Now -->
+        <form action="{% url 'add_to_cart' %}" method="POST" class="ajax-add-cart-form product-shades-selector">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <input type="hidden" name="shade_id" value="{% if shades %}{{ shades.first.id }}{% endif %}">
+
+          <!-- Shade Selector (if product has shades) -->
+          {% if shades %}
+            <div class="shade-selector-wrap">
+              <div class="shade-selector-header">
+                <span style="font-size:0.92rem; font-weight:600;">Selected Shade:</span>
+                <span class="selected-shade-name">{{ shades.first.name }}</span>
+              </div>
+              <div class="shade-swatches-grid">
+                {% for shade in shades %}
+                  <div class="shade-swatch-item {% if forloop.first %}active{% endif %}" 
+                       data-shade-id="{{ shade.id }}" 
+                       data-shade-name="{{ shade.name }}" 
+                       style="background-color: {{ shade.color_hex }};" 
+                       title="{{ shade.name }}"></div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Quantity Stepper & Add to Bag -->
+          <div class="purchase-controls-row">
+            <div class="qty-stepper">
+              <button type="button" class="qty-btn" onclick="let input=this.nextElementSibling; if(input.value>1) input.value--;">-</button>
+              <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+              <button type="button" class="qty-btn" onclick="let input=this.previousElementSibling; if(input.value<{{ product.stock }}) input.value++;">+</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-add-cart-detail">
+              <i class="fa-solid fa-bag-shopping"></i> Add to Luxury Bag
+            </button>
+
+            <!-- Wishlist Button -->
+            <button type="button" 
+                    class="card-action-btn ajax-wishlist-toggle {% if product.id in wishlist_product_ids %}active-wishlist{% endif %}" 
+                    data-product-id="{{ product.id }}" 
+                    style="width:52px; height:52px; font-size:1.25rem;" 
+                    title="Add to Wishlist">
+              <i class="{% if product.id in wishlist_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+            </button>
+          </div>
+
+          <!-- Direct Buy Now Button -->
+          <button type="submit" name="buy_now" value="1" class="btn btn-buy-now-detail" onclick="this.form.classList.remove('ajax-add-cart-form');">
+            <i class="fa-solid fa-bolt"></i> Buy Now with 1-Click Checkout
+          </button>
+        </form>
+
+        <!-- Product Guarantees & Shipping Info -->
+        <div class="product-guarantees-list">
+          <div class="guarantee-item">
+            <i class="fa-solid fa-box-open"></i>
+            <div>
+              <strong>Complimentary Shipping &amp; Returns</strong>
+              <div style="font-size:0.78rem; color:var(--color-text-muted);">Free standard shipping on orders over $50. 30-day hassle-free returns.</div>
+            </div>
+          </div>
+          <div class="guarantee-item">
+            <i class="fa-solid fa-certificate"></i>
+            <div>
+              <strong>100% Authentic Luxury Guarantee</strong>
+              <div style="font-size:0.78rem; color:var(--color-text-muted);">Formulated in Europe &amp; the USA. Clinically tested for purity.</div>
+            </div>
+          </div>
+          <div class="guarantee-item">
+            <i class="fa-solid fa-gift"></i>
+            <div>
+              <strong>Complimentary Luxury Samples</strong>
+              <div style="font-size:0.78rem; color:var(--color-text-muted);">Receive 2 deluxe makeup minis with every order over $60.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Product Information Tabs (Description, How to Apply, Ingredients, Customer Reviews) -->
+    <div class="product-tabs-container" id="reviewsTab">
+      <div class="product-tabs-nav">
+        <button type="button" class="tab-nav-btn active" data-tab-target="tabDescription">Description &amp; Benefits</button>
+        <button type="button" class="tab-nav-btn" data-tab-target="tabHowTo">How to Apply</button>
+        <button type="button" class="tab-nav-btn" data-tab-target="tabIngredients">Clean Ingredients</button>
+        <button type="button" class="tab-nav-btn" data-tab-target="tabReviews">Customer Reviews ({{ reviews.count }})</button>
+      </div>
+
+      <!-- Tab 1: Description -->
+      <div class="tab-content-panel active" id="tabDescription">
+        <div style="max-width:850px; font-size:1.05rem; line-height:1.8; color:var(--color-text-main);">
+          <p style="margin-bottom:1.5rem;">{{ product.description }}</p>
+          {% if product.benefits %}
+            <h4 style="font-family:var(--font-serif); font-size:1.4rem; margin:1.5rem 0 0.85rem;">Key Benefits</h4>
+            <div style="white-space:pre-line; color:var(--color-text-muted); line-height:1.7;">{{ product.benefits }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Tab 2: How to Apply -->
+      <div class="tab-content-panel" id="tabHowTo">
+        <div style="max-width:850px; font-size:1.05rem; line-height:1.8; color:var(--color-text-main);">
+          <h4 style="font-family:var(--font-serif); font-size:1.4rem; margin-bottom:1rem;">Artistry Application Guide</h4>
+          <p>{{ product.how_to_use|default:"Apply directly with precision applicator or appropriate brush. Blend outward in soft circular motions until seamlessly integrated with skin." }}</p>
+        </div>
+      </div>
+
+      <!-- Tab 3: Ingredients -->
+      <div class="tab-content-panel" id="tabIngredients">
+        <div style="max-width:850px; font-size:0.95rem; line-height:1.8; color:var(--color-text-muted);">
+          <h4 style="font-family:var(--font-serif); font-size:1.4rem; margin-bottom:1rem; color:var(--color-text-main);">Clean Beauty Formulation</h4>
+          <p style="margin-bottom:1rem;">100% Vegan, Cruelty-Free, Paraben-Free, Sulfate-Free, and Gluten-Free.</p>
+          <p style="background:var(--color-bg-warm); padding:1.25rem; border-radius:var(--radius-sm); border:1px solid var(--color-border);">
+            {{ product.ingredients|default:"Formulated with certified organic botanicals, hyaluronic acid, vitamin E, and pure mineral pigments." }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Tab 4: Customer Reviews -->
+      <div class="tab-content-panel" id="tabReviews">
+        <div class="reviews-section-grid">
+          
+          <!-- Rating Breakdown Summary -->
+          <div class="review-summary-card">
+            <h3 style="font-size:1.35rem; margin-bottom:1rem;">Overall Customer Rating</h3>
+            <div style="display:flex; align-items:baseline; gap:0.75rem; margin-bottom:0.5rem;">
+              <span class="review-big-score">{{ product.rating }}</span>
+              <span style="color:var(--color-text-muted); font-size:1.1rem;">out of 5.0</span>
+            </div>
+            <div class="rating-stars" style="font-size:1.2rem; margin-bottom:1.5rem;">
+              {% for i in "12345" %}
+                {% if forloop.counter <= product.star_full_count %}
+                  <i class="fa-solid fa-star"></i>
+                {% else %}
+                  <i class="fa-regular fa-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <!-- Progress Bars for 5, 4, 3, 2, 1 stars -->
+            <div style="display:flex; flex-direction:column; gap:0.65rem; margin-bottom:2rem;">
+              {% for star_val, pct in review_percent.items %}
+                <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.85rem;">
+                  <span style="width:50px;">{{ star_val }} Stars</span>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width: {{ pct }}%;"></div>
+                  </div>
+                  <span style="width:35px; text-align:right; color:var(--color-text-muted);">{{ pct }}%</span>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Review Submission Form -->
+            <div style="border-top:1px solid var(--color-border); padding-top:1.5rem;">
+              <h4 style="font-family:var(--font-serif); font-size:1.3rem; margin-bottom:1rem;">Write a Review</h4>
+              <form action="{% url 'submit_review' slug=product.slug %}" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label class="form-label">Your Name</label>
+                  <input type="text" name="author_name" class="form-input" placeholder="e.g. Eleanor Vance" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Rating</label>
+                  <select name="rating" class="form-input" style="cursor:pointer;">
+                    <option value="5">★★★★★ (5 Stars - Pure Perfection)</option>
+                    <option value="4">★★★★☆ (4 Stars - Highly Recommend)</option>
+                    <option value="3">★★★☆☆ (3 Stars - Satisfactory)</option>
+                    <option value="2">★★☆☆☆ (2 Stars - Needs Improvement)</option>
+                    <option value="1">★☆☆☆☆ (1 Star - Disappointed)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Headline / Title</label>
+                  <input type="text" name="title" class="form-input" placeholder="e.g. Pure luxury, lasts all day!" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Your Experience</label>
+                  <textarea name="comment" rows="4" class="form-input form-textarea" placeholder="How does the product feel on your skin? Tell other beauty connoisseurs..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                  Submit Verified Review
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Existing Reviews List -->
+          <div class="reviews-list-wrap">
+            <h3 style="font-size:1.5rem; margin-bottom:1.5rem;">Verified Reviews ({{ reviews.count }})</h3>
+            {% for rev in reviews %}
+              <div class="review-item-card">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.4rem;">
+                  <div class="rating-stars" style="margin-bottom:0;">
+                    {% for i in "12345" %}
+                      {% if forloop.counter <= rev.rating %}
+                        <i class="fa-solid fa-star"></i>
+                      {% else %}
+                        <i class="fa-regular fa-star"></i>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  <span style="font-size:0.8rem; color:var(--color-text-muted);">{{ rev.created_at|date:"F d, Y" }}</span>
+                </div>
+                <h4 style="font-family:var(--font-sans); font-size:1.05rem; font-weight:700; margin-bottom:0.35rem;">
+                  {{ rev.title }}
+                </h4>
+                <p style="font-size:0.95rem; color:var(--color-text-muted); line-height:1.7; margin-bottom:0.75rem;">
+                  {{ rev.comment }}
+                </p>
+                <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--color-primary-dark); font-weight:600;">
+                  <span>{{ rev.author_name }}</span>
+                  <span style="color:#0F5132;"><i class="fa-solid fa-check-circle"></i> Verified Buyer</span>
+                </div>
+              </div>
+            {% empty %}
+              <p style="color:var(--color-text-muted);">Be the first to review this product!</p>
+            {% endfor %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products Section -->
+    {% if related_products %}
+      <div style="margin-top:6rem; padding-top:4rem; border-top:1px solid var(--color-border);">
+        <h2 class="heading-section">You May Also Adore</h2>
+        <p class="section-subtitle">Complementary formulations designed to pair flawlessly.</p>
+        <div class="products-grid">
+          {% for rel_prod in related_products %}
+            {% include 'products/includes/product_card.html' with product=rel_prod %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

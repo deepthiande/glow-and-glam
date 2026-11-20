@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout | GLOW & GLAM Luxury Cosmetics{% endblock %}
+
+{% block content %}
+<div class="checkout-section">
+  <div class="container">
+    
+    <div style="margin-bottom: 2.5rem; text-align: center;">
+      <h1 class="heading-section">Secure Luxury Checkout</h1>
+      <p style="color:var(--color-text-muted);">
+        Enter your delivery address and choose your preferred payment method.
+      </p>
+    </div>
+
+    <form action="{% url 'checkout' %}" method="POST" id="checkoutForm">
+      {% csrf_token %}
+      
+      <div class="checkout-grid">
+        
+        <!-- Left: Details & Payment Methods -->
+        <div class="checkout-main-forms">
+          
+          <!-- 1. Customer Details -->
+          <div class="checkout-card">
+            <h3><i class="fa-regular fa-user" style="color:var(--color-primary);"></i> 1. Contact Information</h3>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                {{ form.full_name }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                {{ form.email }}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              {{ form.phone }}
+            </div>
+          </div>
+
+          <!-- 2. Shipping Address -->
+          <div class="checkout-card">
+            <h3><i class="fa-solid fa-location-dot" style="color:var(--color-primary);"></i> 2. Shipping Address</h3>
+            <div class="form-group">
+              <label class="form-label">Street Address *</label>
+              {{ form.address }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apartment, Suite, Unit (Optional)</label>
+              {{ form.apartment }}
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">City *</label>
+                {{ form.city }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">State / Province *</label>
+                {{ form.state }}
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Postal / ZIP Code *</label>
+                {{ form.postal_code }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Country *</label>
+                {{ form.country }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Shipping Method -->
+          <div class="checkout-card">
+            <h3><i class="fa-solid fa-truck" style="color:var(--color-primary);"></i> 3. Delivery Method</h3>
+            <div style="display:flex; flex-direction:column; gap:0.85rem;">
+              <label class="payment-option-card" style="display:flex; align-items:center; gap:1rem;">
+                <input type="radio" name="shipping_method" value="Standard Delivery" checked style="accent-color:var(--color-primary);">
+                <div>
+                  <div style="font-weight:600;">Complimentary Standard Delivery (3-5 Business Days)</div>
+                  <div style="font-size:0.82rem; color:var(--color-text-muted);">Hand-packaged in our signature rose gold insulated box.</div>
+                </div>
+                <div style="margin-left:auto; font-weight:700; color:#0F5132;">FREE / ${{ cart.shipping_fee }}</div>
+              </label>
+
+              <label class="payment-option-card" style="display:flex; align-items:center; gap:1rem;">
+                <input type="radio" name="shipping_method" value="Express Glam Delivery" style="accent-color:var(--color-primary);">
+                <div>
+                  <div style="font-weight:600;">Express Glam Courier (1-2 Business Days)</div>
+                  <div style="font-size:0.82rem; color:var(--color-text-muted);">Priority processing with premium satin gift wrapping.</div>
+                </div>
+                <div style="margin-left:auto; font-weight:700;">$15.00</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 4. Payment Method -->
+          <div class="checkout-card">
+            <h3><i class="fa-regular fa-credit-card" style="color:var(--color-primary);"></i> 4. Payment Selection</h3>
+            
+            <div class="payment-options-list">
+              
+              <!-- Option A: Credit / Debit Card -->
+              <label class="payment-option-card selected" onclick="selectPaymentTab('card');">
+                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.85rem;">
+                  <input type="radio" name="payment_method" value="card" checked style="accent-color:var(--color-primary);">
+                  <div>
+                    <div style="font-weight:600;">Credit / Debit Card</div>
+                    <div style="font-size:0.82rem; color:var(--color-text-muted);">Instant demo authorization via 256-bit encrypted gateway.</div>
+                  </div>
+                  <div style="margin-left:auto; display:flex; gap:0.5rem; font-size:1.3rem; color:var(--color-text-muted);">
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                    <i class="fa-brands fa-cc-amex"></i>
+                  </div>
+                </div>
+
+                <!-- Demo Card Fields -->
+                <div id="cardFields" style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:1rem; margin-top:0.5rem;">
+                  <div class="form-group" style="margin-bottom:0.75rem;">
+                    <label class="form-label" style="font-size:0.8rem;">Cardholder Name</label>
+                    <input type="text" class="form-input" placeholder="Name on Card (Demo)" value="Sophia Laurent" style="padding:0.6rem 0.85rem;">
+                  </div>
+                  <div class="form-group" style="margin-bottom:0.75rem;">
+                    <label class="form-label" style="font-size:0.8rem;">Card Number</label>
+                    <input type="text" class="form-input" placeholder="4532 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 8921" value="4532 8920 1823 8921" style="padding:0.6rem 0.85rem;">
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" style="font-size:0.8rem;">Expiry (MM/YY)</label>
+                      <input type="text" class="form-input" placeholder="12/28" value="12/28" style="padding:0.6rem 0.85rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" style="font-size:0.8rem;">Security Code (CVV)</label>
+                      <input type="password" class="form-input" placeholder="982" value="982" style="padding:0.6rem 0.85rem;">
+                    </div>
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option B: UPI -->
+              <label class="payment-option-card" onclick="selectPaymentTab('upi');">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                  <input type="radio" name="payment_method" value="upi" style="accent-color:var(--color-primary);">
+                  <div>
+                    <div style="font-weight:600;">UPI / Instant Net Banking</div>
+                    <div style="font-size:0.82rem; color:var(--color-text-muted);">Pay securely using Google Pay, Apple Pay, or UPI ID.</div>
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option C: COD -->
+              <label class="payment-option-card" onclick="selectPaymentTab('cod');">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                  <input type="radio" name="payment_method" value="cod" style="accent-color:var(--color-primary);">
+                  <div>
+                    <div style="font-weight:600;">Cash on Delivery (COD)</div>
+                    <div style="font-size:0.82rem; color:var(--color-text-muted);">Pay with cash upon arrival of your luxury package.</div>
+                  </div>
+                </div>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- 5. Order Notes -->
+          <div class="checkout-card">
+            <h3><i class="fa-regular fa-message" style="color:var(--color-primary);"></i> Order Notes &amp; Gift Message</h3>
+            <div class="form-group" style="margin-bottom:0;">
+              {{ form.order_notes }}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Order Summary Sidebar -->
+        <aside class="order-summary-sidebar">
+          <h3 style="font-size:1.4rem; margin-bottom:1.25rem;">Your Selections ({{ cart.total_items }})</h3>
+
+          <!-- Items list preview -->
+          <div style="display:flex; flex-direction:column; gap:1rem; max-height:300px; overflow-y:auto; margin-bottom:1.5rem; padding-right:0.5rem;">
+            {% for item in cart_items %}
+              <div style="display:flex; gap:0.85rem; align-items:center;">
+                <img src="{{ item.product.main_image }}" alt="{{ item.product.title }}" style="width:50px; height:50px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--color-border);">
+                <div style="flex-grow:1;">
+                  <div style="font-weight:600; font-size:0.88rem;">{{ item.product.title }}</div>
+                  <div style="font-size:0.75rem; color:var(--color-text-muted);">
+                    Qty: {{ item.quantity }} {% if item.shade %}&bull; {{ item.shade.name }}{% endif %}
+                  </div>
+                </div>
+                <div style="font-weight:600; font-size:0.9rem;">
+                  ${{ item.total_price }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Breakdown calculation -->
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>${{ cart.subtotal }}</span>
+          </div>
+
+          {% if cart.coupon %}
+            <div class="summary-row" style="color:var(--color-primary-dark); font-weight:600;">
+              <span>Promo Code ({{ cart.coupon.code }}):</span>
+              <span>-${{ cart.discount_total }}</span>
+            </div>
+          {% endif %}
+
+          <div class="summary-row">
+            <span>Estimated Shipping:</span>
+            <span>{% if cart.shipping_fee == 0 %}<span style="color:#0F5132; font-weight:600;">FREE</span>{% else %}${{ cart.shipping_fee }}{% endif %}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Estimated Tax (5%):</span>
+            <span>${{ cart.tax_amount }}</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total Payable:</span>
+            <span>${{ cart.grand_total }}</span>
+          </div>
+
+          <!-- Place Order Button -->
+          <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:1.5rem;">
+            <i class="fa-solid fa-lock"></i> Place Order (${{ cart.grand_total }})
+          </button>
+
+          <p style="font-size:0.78rem; color:var(--color-text-muted); text-align:center; margin-top:1rem; line-height:1.5;">
+            By placing your order, you agree to the GLOW &amp; GLAM Terms of Service and Privacy Policy. Demo authorization verified immediately.
+          </p>
+        </aside>
+
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function selectPaymentTab(type) {
+    document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
+    const clicked = event.currentTarget;
+    if (clicked) clicked.classList.add('selected');
+    const radio = clicked.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+
+    const cardFields = document.getElementById('cardFields');
+    if (cardFields) {
+      cardFields.style.display = (type === 'card') ? 'block' : 'none';
+    }
+  }
+</script>
+{% endblock %}

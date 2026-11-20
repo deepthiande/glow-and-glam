@@ -1,0 +1,93 @@
+<div class="product-card">
+  <!-- Thumbnail & Floating Action Buttons -->
+  <div class="product-thumb-wrapper">
+    
+    <!-- Badges -->
+    {% if product.badge_text %}
+      <span class="product-badge-pill">{{ product.badge_text }}</span>
+    {% elif product.discount_percent > 0 %}
+      <span class="product-badge-pill">-{{ product.discount_percent }}%</span>
+    {% endif %}
+
+    <!-- Wishlist Button -->
+    <div class="product-card-actions">
+      <button type="button" 
+              class="card-action-btn ajax-wishlist-toggle {% if product.id in wishlist_product_ids %}active-wishlist{% endif %}" 
+              data-product-id="{{ product.id }}" 
+              title="Add to Wishlist" 
+              aria-label="Wishlist">
+        <i class="{% if product.id in wishlist_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+      </button>
+    </div>
+
+    <!-- Product Image with Hover Flip -->
+    <a href="{% url 'product_detail' slug=product.slug %}" class="product-thumb-link">
+      <img src="{{ product.main_image }}" alt="{{ product.title }}" class="product-thumb-img img-main" loading="lazy">
+      {% if product.hover_image and product.hover_image != product.main_image %}
+        <img src="{{ product.hover_image }}" alt="{{ product.title }}" class="product-thumb-img img-hover" loading="lazy">
+      {% endif %}
+    </a>
+
+    <!-- Quick View Overlay Button -->
+    <button type="button" class="quick-view-overlay-btn quick-view-btn" data-product-id="{{ product.id }}">
+      <i class="fa-regular fa-eye"></i> Quick View
+    </button>
+  </div>
+
+  <!-- Product Details -->
+  <div class="product-details">
+    <div class="product-brand">{{ product.brand.name|default:"GLOW & GLAM" }}</div>
+    
+    <a href="{% url 'product_detail' slug=product.slug %}" class="product-title-link">
+      <h3 class="product-card-title">{{ product.title }}</h3>
+    </a>
+
+    <!-- Rating Stars -->
+    <div class="rating-stars">
+      {% for i in "12345" %}
+        {% if forloop.counter <= product.star_full_count %}
+          <i class="fa-solid fa-star"></i>
+        {% else %}
+          <i class="fa-regular fa-star"></i>
+        {% endif %}
+      {% endfor %}
+      <span class="rating-count">({{ product.review_count }})</span>
+    </div>
+
+    <!-- Price Row -->
+    <div class="product-price-row">
+      <span class="current-price">${{ product.price }}</span>
+      {% if product.original_price %}
+        <span class="original-price">${{ product.original_price }}</span>
+      {% endif %}
+      {% if product.discount_percent > 0 %}
+        <span class="discount-tag">{{ product.discount_percent }}% OFF</span>
+      {% endif %}
+    </div>
+
+    <!-- Shades Preview (if applicable) -->
+    {% if product.shades.all %}
+      <div class="card-shade-swatches">
+        {% for shade in product.shades.all|slice:":4" %}
+          <span class="swatch-dot" style="background-color: {{ shade.color_hex }};" title="{{ shade.name }}"></span>
+        {% endfor %}
+        {% if product.shades.count > 4 %}
+          <span class="swatch-more-text">+{{ product.shades.count|add:"-4" }} more</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Add to Cart Form Button -->
+    <form action="{% url 'add_to_cart' %}" method="POST" class="ajax-add-cart-form" style="margin-top: auto;">
+      {% csrf_token %}
+      <input type="hidden" name="product_id" value="{{ product.id }}">
+      {% if product.shades.first %}
+        <input type="hidden" name="shade_id" value="{{ product.shades.first.id }}">
+      {% endif %}
+      <input type="hidden" name="quantity" value="1">
+      <button type="submit" class="card-add-to-cart-btn">
+        <i class="fa-solid fa-bag-shopping"></i> Add to Bag
+      </button>
+    </form>
+  </div>
+</div>

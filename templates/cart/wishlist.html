@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Saved Wishlist | GLOW & GLAM{% endblock %}
+
+{% block content %}
+<div class="shop-page-wrapper">
+  <div class="container">
+    
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <a href="{% url 'home' %}">Home</a>
+      <span>/</span>
+      <span class="current">My Wishlist</span>
+    </div>
+
+    <div style="text-align:center; margin-bottom:3rem;">
+      <h1 class="heading-section">Saved Favorites</h1>
+      <p class="section-subtitle" style="margin-bottom:0;">
+        Curate your personal beauty desires and transfer them to your bag anytime.
+      </p>
+    </div>
+
+    {% if wishlist_items %}
+      <div class="products-grid">
+        {% for item in wishlist_items %}
+          <div class="product-card">
+            <!-- Thumbnail & Actions -->
+            <div class="product-thumb-wrapper">
+              {% if item.product.badge_text %}
+                <span class="product-badge-pill">{{ item.product.badge_text }}</span>
+              {% endif %}
+
+              <div class="product-card-actions">
+                <a href="{% url 'toggle_wishlist' product_id=item.product.id %}" 
+                   class="card-action-btn active-wishlist" 
+                   title="Remove from wishlist">
+                  <i class="fa-solid fa-heart"></i>
+                </a>
+              </div>
+
+              <a href="{% url 'product_detail' slug=item.product.slug %}" class="product-thumb-link">
+                <img src="{{ item.product.main_image }}" alt="{{ item.product.title }}" class="product-thumb-img img-main">
+              </a>
+            </div>
+
+            <!-- Details -->
+            <div class="product-details">
+              <div class="product-brand">{{ item.product.brand.name|default:"GLOW & GLAM" }}</div>
+              <a href="{% url 'product_detail' slug=item.product.slug %}" class="product-title-link">
+                <h3 class="product-card-title">{{ item.product.title }}</h3>
+              </a>
+
+              <div class="product-price-row">
+                <span class="current-price">${{ item.product.price }}</span>
+                {% if item.product.original_price %}
+                  <span class="original-price">${{ item.product.original_price }}</span>
+                {% endif %}
+              </div>
+
+              <!-- Move to Cart Button -->
+              <a href="{% url 'move_to_cart' item_id=item.id %}" class="btn btn-primary btn-sm btn-full" style="margin-top:auto;">
+                <i class="fa-solid fa-bag-shopping"></i> Move to Bag
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <div style="text-align:center; padding:5rem 2rem; background:#FFFFFF; border-radius:var(--radius-lg); border:1px solid var(--color-border); max-width:600px; margin:0 auto;">
+        <i class="fa-regular fa-heart" style="font-size:3.5rem; color:var(--color-primary-light); margin-bottom:1.5rem;"></i>
+        <h2 style="font-size:2rem; margin-bottom:0.75rem;">Your Wishlist is Empty</h2>
+        <p style="color:var(--color-text-muted); margin-bottom:2rem; line-height:1.7;">
+          Save your dream shades, skincare elixirs, and brushes by clicking the heart icon on any product card.
+        </p>
+        <a href="{% url 'shop' %}" class="btn btn-primary">
+          Explore Cosmetics
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

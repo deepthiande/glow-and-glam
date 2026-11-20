@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account | GLOW & GLAM Luxury Cosmetics{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 4rem 1.5rem 6rem;">
+  <div style="max-width: 540px; margin: 0 auto; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 3rem 2.5rem; box-shadow: var(--shadow-md);">
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-primary-dark);">VIP Membership</span>
+      <h1 style="font-size: 2.2rem; margin: 0.35rem 0 0.5rem;">Join GLOW &amp; GLAM</h1>
+      <p style="color: var(--color-text-muted); font-size: 0.95rem;">
+        Enjoy bespoke recommendations, preview access, and 20% off your first purchase.
+      </p>
+    </div>
+
+    {% if form.errors %}
+      <div style="background:#F8D7DA; color:#721C24; padding:0.85rem 1.25rem; border-radius:var(--radius-sm); margin-bottom:1.5rem; font-size:0.88rem;">
+        Please fix the highlighted fields below.
+      </div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}<div style="color:red; font-size:0.75rem;">{{ form.first_name.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name *</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}<div style="color:red; font-size:0.75rem;">{{ form.last_name.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Username *</label>
+        {{ form.username }}
+        {% if form.username.errors %}<div style="color:red; font-size:0.75rem;">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address *</label>
+        {{ form.email }}
+        {% if form.email.errors %}<div style="color:red; font-size:0.75rem;">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          {{ form.password }}
+          {% if form.password.errors %}<div style="color:red; font-size:0.75rem;">{{ form.password.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          {{ form.confirm_password }}
+          {% if form.confirm_password.errors %}<div style="color:red; font-size:0.75rem;">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 1rem;">
+        Create My VIP Account
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); font-size: 0.92rem; color: var(--color-text-muted);">
+      Already have an account? 
+      <a href="{% url 'login' %}" style="color: var(--color-primary); font-weight: 600;">Sign In</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

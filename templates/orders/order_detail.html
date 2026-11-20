@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order {{ order.order_number }} | GLOW & GLAM{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div class="breadcrumbs">
+    <a href="{% url 'home' %}">Home</a>
+    <span>/</span>
+    <a href="{% url 'profile' %}?tab=orders">My Orders</a>
+    <span>/</span>
+    <span class="current">{{ order.order_number }}</span>
+  </div>
+
+  <div style="background:#FFF; border-radius:var(--radius-md); border:1px solid var(--color-border); padding:2.5rem; box-shadow:var(--shadow-sm); max-width:850px; margin:0 auto;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--color-primary); font-weight:700;">Order Details</span>
+        <h1 style="font-size:2rem; margin-top:0.25rem;">{{ order.order_number }}</h1>
+        <div style="color:var(--color-text-muted); font-size:0.88rem;">Placed on {{ order.created_at|date:"F d, Y at g:i A" }}</div>
+      </div>
+      <div>
+        <span class="badge {% if order.status == 'Delivered' %}badge-new{% elif order.status == 'Shipped' %}badge-luxury{% else %}badge-bestseller{% endif %}" style="font-size:0.85rem; padding:0.4rem 1rem;">
+          {{ order.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Items List -->
+    <div style="display:flex; flex-direction:column; gap:1.25rem; margin-bottom:2rem; border-top:1px solid var(--color-border); padding-top:1.5rem;">
+      {% for item in order.items.all %}
+        <div style="display:flex; align-items:center; gap:1.25rem;">
+          <img src="{{ item.product_image }}" alt="{{ item.product_title }}" style="width:70px; height:70px; border-radius:var(--radius-sm); object-fit:cover; border:1px solid var(--color-border);">
+          <div style="flex-grow:1;">
+            <div style="font-weight:600; font-size:1.05rem;">{{ item.product_title }}</div>
+            <div style="font-size:0.85rem; color:var(--color-text-muted);">
+              Quantity: {{ item.quantity }} {% if item.shade_name %}&bull; Shade: {{ item.shade_name }}{% endif %}
+            </div>
+            <div style="font-size:0.85rem; color:var(--color-primary); font-weight:500;">
+              Unit Price: ${{ item.price }}
+            </div>
+          </div>
+          <div style="font-weight:700; font-size:1.1rem;">
+            ${{ item.total_price }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Details Grid -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem; background:var(--color-bg-warm); padding:1.5rem; border-radius:var(--radius-sm); margin-bottom:2rem;">
+      <div>
+        <h4 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-text-muted); margin-bottom:0.4rem;">Shipping Address</h4>
+        <div style="font-weight:600;">{{ order.full_name }}</div>
+        <div style="color:var(--color-text-muted); font-size:0.88rem; line-height:1.6;">
+          {{ order.address }}{% if order.apartment %}, {{ order.apartment }}{% endif %}<br>
+          {{ order.city }}, {{ order.state }} {{ order.postal_code }}<br>
+          {{ order.country }}
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-text-muted); margin-bottom:0.4rem;">Payment Details</h4>
+        <div style="color:var(--color-text-muted); font-size:0.88rem; line-height:1.6;">
+          Method: <strong>{{ order.get_payment_method_display }}</strong><br>
+          Payment Status: <strong style="color:#0F5132;">{{ order.payment_status }}</strong><br>
+          Delivery Option: <strong>{{ order.shipping_method }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.95rem; border-top:1px solid var(--color-border); padding-top:1.5rem;">
+      <div style="display:flex; justify-content:space-between; color:var(--color-text-muted);">
+        <span>Subtotal:</span>
+        <span>${{ order.subtotal }}</span>
+      </div>
+      {% if order.discount_amount > 0 %}
+        <div style="display:flex; justify-content:space-between; color:var(--color-primary-dark); font-weight:600;">
+          <span>Discount:</span>
+          <span>-${{ order.discount_amount }}</span>
+        </div>
+      {% endif %}
+      <div style="display:flex; justify-content:space-between; color:var(--color-text-muted);">
+        <span>Shipping:</span>
+        <span>{% if order.shipping_cost == 0 %}FREE{% else %}${{ order.shipping_cost }}{% endif %}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; color:var(--color-text-muted);">
+        <span>Tax:</span>
+        <span>${{ order.tax_amount }}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:1.35rem; font-weight:700; border-top:1px solid var(--color-border); padding-top:0.75rem; margin-top:0.5rem;">
+        <span>Total:</span>
+        <span>${{ order.total_price }}</span>
+      </div>
+    </div>
+
+    <div style="margin-top:2.5rem; display:flex; justify-content:space-between; align-items:center;">
+      <a href="{% url 'profile' %}?tab=orders" class="btn btn-secondary btn-sm">
+        &larr; Back to Order History
+      </a>
+      <a href="{% url 'shop' %}" class="btn btn-primary btn-sm">
+        Shop More Cosmetics
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

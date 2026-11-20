@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Luxury Shopping Bag | GLOW & GLAM{% endblock %}
+
+{% block content %}
+<div class="cart-page-section">
+  <div class="container">
+    
+    <div style="margin-bottom: 2.5rem; text-align: center;">
+      <h1 class="heading-section">Your Shopping Bag</h1>
+      <p style="color:var(--color-text-muted);">
+        {% if cart_items %}Review your selections before enjoying complimentary luxury packaging.{% else %}Your luxury shopping bag is currently empty.{% endif %}
+      </p>
+    </div>
+
+    {% if cart_items %}
+      <!-- Free Shipping Progress Indicator -->
+      <div class="free-shipping-bar">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; font-size:0.92rem;">
+          {% if remaining_for_free_ship > 0 %}
+            <span>Add <strong>${{ remaining_for_free_ship }}</strong> more to unlock <strong>Complimentary Luxury Shipping</strong>!</span>
+          {% else %}
+            <span style="color:#0F5132; font-weight:600;"><i class="fa-solid fa-circle-check"></i> You unlocked Complimentary Luxury Shipping!</span>
+          {% endif %}
+          <span style="font-weight:700;">${{ cart.subtotal }} / $50.00</span>
+        </div>
+        <div class="progress-bar-wrap" style="height:10px;">
+          <div class="progress-bar-fill" style="width: {{ shipping_progress }}%; background-color: var(--color-primary);"></div>
+        </div>
+      </div>
+
+      <div class="cart-layout">
+        
+        <!-- Cart Items Table Card -->
+        <div class="cart-table-card">
+          {% for item in cart_items %}
+            <div class="cart-item-row" id="cartItemRow-{{ item.id }}">
+              
+              <!-- Thumbnail -->
+              <img src="{{ item.product.main_image }}" alt="{{ item.product.title }}" class="cart-item-thumb">
+
+              <!-- Title & Shade -->
+              <div>
+                <a href="{% url 'product_detail' slug=item.product.slug %}">
+                  <h3 class="cart-item-title">{{ item.product.title }}</h3>
+                </a>
+                <div class="cart-item-shade">
+                  {% if item.shade %}
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:{{ item.shade.color_hex }}; vertical-align:middle; margin-right:4px;"></span>
+                    Shade: {{ item.shade.name }}
+                  {% else %}
+                    Standard Edition
+                  {% endif %}
+                </div>
+                <div style="font-size:0.85rem; color:var(--color-text-muted); margin-top:2px;">
+                  Unit Price: ${{ item.product.price }}
+                </div>
+              </div>
+
+              <!-- Quantity Stepper (+ / -) -->
+              <div class="qty-stepper" style="height:40px;">
+                <button type="button" class="qty-btn cart-qty-action-btn" data-item-id="{{ item.id }}" data-action="decrease" style="width:28px; height:28px;">-</button>
+                <input type="number" value="{{ item.quantity }}" readonly class="qty-input cart-item-qty-input" style="width:34px; font-size:0.9rem;">
+                <button type="button" class="qty-btn cart-qty-action-btn" data-item-id="{{ item.id }}" data-action="increase" style="width:28px; height:28px;">+</button>
+              </div>
+
+              <!-- Item Total -->
+              <div class="cart-item-price cart-item-total-price">
+                ${{ item.total_price }}
+              </div>
+
+              <!-- Delete Button -->
+              <a href="{% url 'remove_from_cart' item_id=item.id %}" class="btn-remove-item" title="Remove item" aria-label="Remove">
+                <i class="fa-solid fa-trash-can"></i>
+              </a>
+
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <aside class="order-summary-sidebar">
+          <h3 style="font-size:1.4rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--color-border);">
+            Order Summary
+          </h3>
+
+          <div class="summary-row">
+            <span>Subtotal ({{ cart.total_items }} items)</span>
+            <span id="summarySubtotal">${{ cart.subtotal }}</span>
+          </div>
+
+          <!-- Coupon Discount Row -->
+          {% if cart.coupon %}
+            <div class="summary-row" style="color:var(--color-primary-dark); font-weight:600;">
+              <span>Discount ({{ cart.coupon.code }}):</span>
+              <span id="summaryDiscount">-${{ cart.discount_total }}</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; background:var(--color-pink-soft); padding:0.4rem 0.75rem; border-radius:var(--radius-sm); margin-bottom:1rem;">
+              <span>Coupon <strong>{{ cart.coupon.code }}</strong> applied!</span>
+              <a href="{% url 'remove_coupon' %}" style="color:#E63946; font-weight:600;">Remove</a>
+            </div>
+          {% else %}
+            <div class="summary-row" style="display:none;" id="discountRow">
+              <span>Discount:</span>
+              <span id="summaryDiscount">$0.00</span>
+            </div>
+          {% endif %}
+
+          <div class="summary-row">
+            <span>Estimated Shipping</span>
+            <span id="summaryShipping">
+              {% if cart.shipping_fee == 0 %}
+                <span style="color:#0F5132; font-weight:600;">FREE</span>
+              {% else %}
+                ${{ cart.shipping_fee }}
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="summary-row">
+            <span>Estimated Tax (5%)</span>
+            <span id="summaryTax">${{ cart.tax_amount }}</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Estimated Total</span>
+            <span id="summaryGrandTotal">${{ cart.grand_total }}</span>
+          </div>
+
+          <!-- Coupon Form Box -->
+          <form action="{% url 'apply_coupon' %}" method="POST" class="coupon-form-box">
+            {% csrf_token %}
+            <input type="text" name="coupon_code" placeholder="Promo code (e.g. GLAM20)" class="coupon-input" required>
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Apply
+            </button>
+          </form>
+
+          <!-- Checkout Button -->
+          <a href="{% url 'checkout' %}" class="btn btn-primary btn-full btn-lg" style="margin-top:1rem;">
+            Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
+          </a>
+
+          <div style="text-align:center; margin-top:1.25rem;">
+            <a href="{% url 'shop' %}" style="font-size:0.88rem; color:var(--color-text-muted); text-decoration:underline;">
+              &larr; Continue Shopping
+            </a>
+          </div>
+
+          <!-- Trust assurances -->
+          <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--color-border); font-size:0.82rem; color:var(--color-text-muted); display:flex; flex-direction:column; gap:0.6rem;">
+            <div><i class="fa-solid fa-lock" style="color:var(--color-primary);"></i> Bank-grade 256-bit SSL encrypted checkout</div>
+            <div><i class="fa-solid fa-box" style="color:var(--color-primary);"></i> Signature rose gold gift packaging included</div>
+          </div>
+        </aside>
+
+      </div>
+
+    {% else %}
+      <!-- Empty Bag State -->
+      <div style="text-align:center; padding:5rem 2rem; background:#FFFFFF; border-radius:var(--radius-lg); border:1px solid var(--color-border); max-width:650px; margin:0 auto;">
+        <i class="fa-solid fa-bag-shopping" style="font-size:3.5rem; color:var(--color-primary-light); margin-bottom:1.5rem;"></i>
+        <h2 style="font-size:2rem; margin-bottom:0.75rem;">Your Luxury Bag is Empty</h2>
+        <p style="color:var(--color-text-muted); margin-bottom:2rem; line-height:1.7;">
+          Discover award-winning lipsticks, silk foundations, and artisan makeup brushes formulated to elevate your radiance.
+        </p>
+        <div style="display:flex; justify-content:center; gap:1rem;">
+          <a href="{% url 'shop' %}" class="btn btn-primary">
+            Explore All Products
+          </a>
+          <a href="{% url 'wishlist' %}" class="btn btn-secondary">
+            View My Wishlist
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
